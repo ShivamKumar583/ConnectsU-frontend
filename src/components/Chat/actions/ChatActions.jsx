@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ClipLoader } from "react-spinners";
-import { sendMessage } from "../../../features/chatSlice";
+import { scheduleMessage, sendMessage } from "../../../features/chatSlice";
 import { SendIcon } from "../../../svg";
 import { Attachments } from "./attachments";
 import EmojiPickerApp from "./EmojiPicker";
 import Input from "./Input";
 import SocketContext from "../../../context/SocketContext";
+import ScheduleMessageModal from "../messages/Scheduled Message Modal/ScheduleMessageModal";
 function ChatActions({ socket }) {
   const dispatch = useDispatch();
   const [showPicker, setShowPicker] = useState(false);
@@ -23,6 +24,53 @@ function ChatActions({ socket }) {
     files: [],
     token,
   }
+
+  // schedule message
+  const [showScheduleMessageModal , setShowScheduleMessageModal ] = useState(false);
+  const [scheduleDate , setScheduleDate] = useState(new Date()) 
+  const handleScheduleMessageModal = () => {
+    setShowAttachments(false);
+    setShowScheduleMessageModal(true);
+  };
+
+  const handleDateChange = (date) => {
+    setScheduleDate(date);
+  };
+
+  const handleScheduleMessage = async(e) => {
+    e.preventDefault();
+    console.log(message);
+    console.log(activeConversation)
+    const values ={
+      token,
+      sender:user._id ,
+      message:message,
+      conversation:activeConversation._id,
+      scheduledAt:scheduleDate
+    }
+
+    let res = await dispatch(scheduleMessage(values));
+
+    setShowScheduleMessageModal(false);
+    setMessage("");
+  }
+
+  useEffect(() => {
+    socket.on('schedule message', async(data) => {
+
+      const values = {
+        message:data.message,
+        convo_id: data.conversation,
+        files: [],
+        token,
+      } 
+
+      let newMsg = await dispatch(sendMessage(values));
+      socket.emit("send message", newMsg.payload);
+
+    })
+  },[])
+
   const SendMessageHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -30,11 +78,13 @@ function ChatActions({ socket }) {
     
     
     socket.emit("send message", newMsg.payload);
-    setMessage("");
+    setMessage(""); 
     setLoading(false);
   };
+
   return (
-    <form
+    <>
+          <form
       onSubmit={(e) => SendMessageHandler(e)}
       className="dark:bg-slate-400 h-[60px] w-full flex items-center absolute bottom-0 py-2 px-4 select-none"
     >
@@ -54,6 +104,7 @@ function ChatActions({ socket }) {
             showAttachments={showAttachments}
             setShowAttachments={setShowAttachments}
             setShowPicker={setShowPicker}
+            handleScheduleMessageModal={handleScheduleMessageModal}
           />
         </ul>
         {/*Input*/}
@@ -68,6 +119,19 @@ function ChatActions({ socket }) {
         </button>
       </div>
     </form>
+
+    {
+      showScheduleMessageModal && (
+        <ScheduleMessageModal
+          onClose={() => setShowScheduleMessageModal(false)} 
+          scheduleDate={scheduleDate}
+          handleDateChange={handleDateChange}
+          handleScheduleMessage={handleScheduleMessage}
+        />
+      )
+    }
+    </>
+
   );
 }
 

@@ -225,6 +225,7 @@ function Home({ socket }) {
   useEffect(() => {
     //lsitening to receiving a message
     socket.on("receive message", (message) => {
+      console.log('done');
       dispatch(updateMessagesAndConversations(message));
     });
   

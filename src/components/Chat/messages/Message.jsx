@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 
 import EmojiPicker from 'emoji-picker-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessageReaction, addReaction } from "../../../features/chatSlice";
+import { addMessageReaction, addReaction, scheduleMessage, translateMessage } from "../../../features/chatSlice";
 import ReactionRemoveModal from "./Reaction Feature/ReactionRemoveModal";
 import SocketContext from "../../../context/SocketContext";
-
+import MessageModal from "./Messages Modal/MessageModal";
 
 function Message({ message, me ,socket}) {
-  const [showEmoji, setShowEmoji] = useState(false);
   const [showReactionRemoveModal , setShowReactionRemoveModal] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState(null);
   const dispatch = useDispatch();
@@ -19,7 +18,9 @@ function Message({ message, me ,socket}) {
   const reactionsOnMessage = message?.reactions?.[0]?.reaction;
   const reactionUserId = message?.reactions?.[0]?.user;
   const {activeConversation}  =useSelector((state) => state.chat);
-
+  const [translatedMessage , setTranslatedMessage] = useState("");
+  // message modal
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   useEffect(() => {
     if (reactionsOnMessage) {
@@ -31,13 +32,27 @@ function Message({ message, me ,socket}) {
   }, [reactionsOnMessage]);
 
   const handleMouseEnter = () => {
-    setShowEmoji(true);
+    setShowMessageModal(true);
   };
 
-  const handleMouseLeave = () => {
-    setShowEmoji(false);
+  const handleReactionRemoveModal = () => {
+    setShowMessageModal(false);
+    setShowReactionRemoveModal(true);
+  };
+
+
+  const handleMessageTranslate = async() => {
+    const values = {
+      token,
+      message_id: message._id,
+    };
+    let res = await dispatch(translateMessage(values))
+
+    setTranslatedMessage(res.payload.translation);
+    setShowMessageModal(false);
+    
   }
-  
+
   
   const handleReaction = async (emojiObject) => {
     setSelectedEmoji(emojiObject.emoji);
@@ -61,101 +76,93 @@ function Message({ message, me ,socket}) {
     };
   
     socket.emit('send reaction', updatedResponse);
-  
+    setShowMessageModal(false);
   };
   
 
   return (
     <div
-      className={`w-full flex mt-2 space-x-3 max-w-xs  ${
-        me ? "ml-auto justify-end flex-row" : " flex-row"
+  className={`w-full flex mt-2 space-x-3 max-w-xs ${
+    me ? "ml-auto justify-end flex-row" : "flex-row"
+  }`}
+>
+  {/* Message Container */}
+  <div
+    className={`relative ${selectedEmoji ? "mb-4" : ""}`}
+    onDoubleClick={handleMouseEnter}
+  >
+    {/* Sender User Message */}
+    {!me && message.conversation.isGroup && (
+      <div className="absolute top-0.5 left-[-37px]">
+        <img
+          src={message.sender.picture}
+          alt=""
+          className="w-8 h-8 rounded-full"
+        />
+      </div>
+    )}
+
+    {/* Reaction Feature */}
+    {selectedEmoji && (
+      <div
+        className={` ${me ? ' bg-slate-500':' bg-purple-700'} absolute bottom-[-8px] left-2  rounded-full z-10 flex items-center space-x-1 p-1`}
+        onClick={() => setShowReactionRemoveModal(true)}
+      >
+        <p className="text-sm md:text-base">{selectedEmoji}</p>
+      </div>
+    )}
+
+    <div
+      className={`relative h-full dark:text-slate-200 p-2 rounded-lg ${
+        me ? "bg-slate-500" : "dark:bg-purple-700"
       }`}
     >
-      
-      {me && showEmoji && (
-        <div 
-          className="h-9"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-         <EmojiPicker reactionsDefaultOpen={true} onReactionClick={handleReaction} />
-          
-        </div>
-      )}
-
-      {/*Message Container*/}
-      <div
-        className={`relative ${selectedEmoji ? ' mb-2' : ''}  `}
-        onDoubleClick={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* sender user message */}
-        {!me && message.conversation.isGroup && (
-          <div className="absolute top-0.5 left-[-37px]">
-            <img
-              src={message.sender.picture}
-              alt=""
-              className="w-8 h-8 rounded-full"
-            />
-          </div>
-        )}
-
-        {/* reaction feature */}
-        {me && selectedEmoji && (
-          <div className={`absolute  top-8 -left-4 bg-slate-500 rounded-full z-10 flex items-center space-x-1`} onClick={() => setShowReactionRemoveModal(true)} >
-            <p>{selectedEmoji}</p>
-          </div>
-        )}
-
-        <div
-          className={`relative h-full dark:text-slate-200 p-2 rounded-lg
-        ${me ? "bg-slate-500" : "dark:bg-purple-700"}
-        `}
-        >
-          {/*Message*/}
-          <p className="float-left h-full text-sm pb-4 pr-8">
-            {message.message}
+      {/* Message */}
+      <p className="text-sm pb-4 pr-8">
+        {message.message}
+        {translatedMessage && (
+          <p className="mt-2 text-slate-800 font-bold text-xs md:text-sm">
+            Translated Message - {translatedMessage}
           </p>
-          {/*Message Date*/}
-          <span className="absolute right-1.5 bottom-1.5 text-xs text-dark_text_5 leading-none">
-            {moment(message.createdAt).format("HH:mm")}
-          </span>
-          {/*Traingle*/}
-          {!me ? (
-            <span>
-              <TraingleIcon className="dark:fill-purple-700 rotate-[60deg] absolute top-[-5px] -left-1.5" />
-            </span>
-          ) : null}
-        </div>
-
-        {!me && selectedEmoji && (
-          <div className={`absolute  top-8 right-[-8%] bg-purple-600 rounded-full z-10 flex items-center space-x-1`} onClick={() => setShowReactionRemoveModal(true)} >
-            <p>{selectedEmoji}</p>
-          </div>
         )}
-      </div>
-      {!me && showEmoji && (
-        <div 
-          className=" text-white h-9"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-         <EmojiPicker size={10} height={200} width={300} reactionsDefaultOpen={true} onReactionClick={handleReaction} />
+      </p>
 
-          
-        </div>
-      )}
-      {showReactionRemoveModal && (
-        <ReactionRemoveModal
-        message = {message}
-          reactions={message?.reactions}
-          messageId={message._id}
-          currentUserId={currentUserId}
-          setSelectedEmoji = {setSelectedEmoji}
-          onClose={() => setShowReactionRemoveModal(false)}
-        />
+      {/* Message Date */}
+      <span className="absolute right-1.5 bottom-1.5 text-xs text-dark_text_5 leading-none">
+        {moment(message.createdAt).format("HH:mm")}
+      </span>
+
+      {/* Triangle */}
+      {!me && (
+        <span>
+          <TraingleIcon className="dark:fill-purple-700 rotate-[60deg] absolute top-[-5px] -left-1.5" />
+        </span>
       )}
     </div>
+  </div>
+
+  {showReactionRemoveModal && (
+    <ReactionRemoveModal
+      message={message}
+      reactions={message?.reactions}
+      messageId={message._id}
+      currentUserId={currentUserId}
+      setSelectedEmoji={setSelectedEmoji}
+      onClose={() => setShowReactionRemoveModal(false)}
+    />
+  )}
+  {showMessageModal && (
+    <MessageModal 
+      me={me}
+      handleMessageTranslate={handleMessageTranslate}
+      handleReactionRemoveModal={handleReactionRemoveModal}
+      handleReaction={handleReaction}
+      onClose={() => setShowMessageModal(false)}
+    />
+  )}
+  
+</div>
+
   );
 }
 

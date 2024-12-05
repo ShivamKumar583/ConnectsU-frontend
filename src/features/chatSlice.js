@@ -186,6 +186,60 @@ export const markMessagesAsSeen = createAsyncThunk(
   }
 );
 
+// translate messages
+export const translateMessage = createAsyncThunk(
+  "message/translateMessage",
+  async (values, { rejectWithValue }) => {
+    const { token, message_id } = values;
+    try {
+      const { data } = await axios.post(
+        `${MESSAGE_ENDPOINT}/${message_id}/translate`,
+        {
+          message_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(data);
+      return data.translatedMessage[0];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.error?.message || "Someting went wrong"
+      );
+    }
+  }
+);
+
+//  schedule messages
+export const scheduleMessage = createAsyncThunk(
+  "message/translateMessage",
+  async (values, { rejectWithValue }) => {
+    const { token, sender ,message,conversation,scheduledAt } = values;
+    try {
+      const { data } = await axios.post(
+        `${MESSAGE_ENDPOINT}/schedule`,
+        {
+          sender ,message,conversation,scheduledAt
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(data);
+      return data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.error?.message || "Someting went wrong"
+      );
+    }
+  }
+);
+
 
 export const chatSlice = createSlice({
   name: "chat",

@@ -50,6 +50,8 @@ function ReactionRemoveModal({
       <div className="bg-white dark:bg-dark_bg_2 p-6 rounded-lg shadow-lg w-80">
         <h2 className="text-lg font-semibold mb-4 text-slate-300">Reactions</h2>
         <ul className="space-y-3">
+          {reactions.length === 0 && 
+          <p className=" text-slate-300 text-center"> No reactions</p>}
           {reactions.map((reaction, index) => (
             <li key={index} className="flex   items-center">
               <span className="font-medium text-gray-800 dark:text-white">

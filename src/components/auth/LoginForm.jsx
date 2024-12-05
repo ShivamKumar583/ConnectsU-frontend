@@ -31,11 +31,11 @@ export default function RegisterForm() {
       {/* Container */}
       <div className="w-full max-w-md space-y-8 p-10 dark:bg-slate-400 rounded-xl shadow-md shadow-purple-400">
         {/*Heading*/}
-        <div className="text-center dark:text-purple-600">
-        
-          <h2 className="mt-6 text-3xl font-bold">
-          <AiOutlineWechat size={50} className=" text-purple-600 -mb-12 translate-x-6  " />
-          Welcome back</h2>
+        <div className="text-center flex flex-col items-center  dark:text-purple-600">
+        <AiOutlineWechat size={50} className=" text-purple-600 " />
+          <h2 className=" text-3xl font-bold">
+            Welcome back!
+          </h2>
           <p className="mt-2 text-sm">Sign in</p>
         </div>
         {/*Form*/}

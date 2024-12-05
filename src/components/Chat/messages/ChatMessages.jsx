@@ -51,7 +51,7 @@ function ChatMessages({ typing ,socket,showSidebar}) {
                   ))
                 : null}
               {/*Message text*/}
-              {message.message.length > 0 ? (
+              {message.message.length > 0 && !message.isScheduled ? (
                 <Message
                   message={message}
                   key={message._id}

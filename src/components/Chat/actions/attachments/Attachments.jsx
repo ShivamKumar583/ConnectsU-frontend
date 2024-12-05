@@ -5,7 +5,9 @@ export default function Attachments({
   showAttachments,
   setShowAttachments,
   setShowPicker,
+  handleScheduleMessageModal
 }) {
+  
   return (
     <li className="relative z-10">
       <button
@@ -19,7 +21,7 @@ export default function Attachments({
         <AttachmentIcon className="dark:fill-purple-600 " />
       </button>
       {/*Menu*/}
-      {showAttachments ? <Menu /> : null}
+      {showAttachments ? <Menu handleScheduleMessageModal={handleScheduleMessageModal} setShowAttachments={setShowAttachments} /> : null}
     </li>
   );
 }

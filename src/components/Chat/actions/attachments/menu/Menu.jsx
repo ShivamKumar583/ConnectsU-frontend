@@ -1,38 +1,25 @@
-import {
-  CameraIcon,
-  ContactIcon,
-  DocumentIcon,
-  PollIcon,
-  StickerIcon,
-} from "../../../../../svg";
+import { MdScheduleSend  } from "react-icons/md";
+
 import DocumentAttachment from "./DocumentAttachment";
 import PhotoAttachment from "./PhotoAttachment";
 
-export default function Menu() {
+export default function Menu({setShowAttachments,handleScheduleMessageModal}) {
+  
   return (
+    <>
     <ul className="absolute bottom-14 openEmojiAnimation">
-      <li>
-        <button type="button" className="rounded-full">
-          <PollIcon />
-        </button>
-      </li>
-      <li>
-        <button type="button" className="bg-[#0EABF4] rounded-full">
-          <ContactIcon />
-        </button>
-      </li>
+      
       <DocumentAttachment />
+      
       <li>
-        <button type="button" className="bg-[#D3396D] rounded-full">
-          <CameraIcon />
-        </button>
-      </li>
-      <li>
-        <button type="button" className="rounded-full">
-          <StickerIcon />
+        <button type="button" className="rounded-full flex justify-center items-center bg-purple-600 w-[53px] h-[53px] mb-2 text-slate-100  ">
+          <MdScheduleSend size={30} onClick={() => handleScheduleMessageModal()} />
         </button>
       </li>
       <PhotoAttachment />
     </ul>
+
+    </>
+    
   );
 }
