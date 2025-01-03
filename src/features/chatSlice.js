@@ -215,7 +215,7 @@ export const translateMessage = createAsyncThunk(
 
 //  schedule messages
 export const scheduleMessage = createAsyncThunk(
-  "message/translateMessage",
+  "message/scheduleMessage",
   async (values, { rejectWithValue }) => {
     const { token, sender ,message,conversation,scheduledAt } = values;
     try {

@@ -56,8 +56,7 @@ function ChatActions({ socket }) {
   }
 
   useEffect(() => {
-    socket.on('schedule message', async(data) => {
-
+    socket.on("schedule message", async(data) => {
       const values = {
         message:data.message,
         convo_id: data.conversation,
